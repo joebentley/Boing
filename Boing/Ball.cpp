@@ -86,9 +86,18 @@ Ball::Ball(int columns, int rows, float radius) : Model("vertex_ball.glsl", "fra
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(3 * sizeof(GLfloat)));
     glEnableVertexAttribArray(1);
+    
+    colourLocation = glGetUniformLocation(shaderProgram.program(), "selectedCol");
+    set_colour(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 }
 
 void Ball::draw()
 {
     Model::draw((GLsizei)vertices.size() / 4);
+}
+
+void Ball::set_colour(glm::vec4 colour)
+{
+    shaderProgram.use();
+    glUniform4f(colourLocation, colour.r, colour.g, colour.b, colour.a);
 }

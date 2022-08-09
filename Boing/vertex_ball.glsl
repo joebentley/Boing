@@ -6,10 +6,14 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
+uniform vec4 selectedCol;
+
 out float oCol;
+out vec4 selCol;
 
 void main()
 {
     oCol = aCol;
+    selCol = selectedCol;
     gl_Position = projection * view * model * vec4(aPos, 1.0);
 }

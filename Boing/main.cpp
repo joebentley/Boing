@@ -105,6 +105,8 @@ int main(void)
     
     const float dt = 1/60.f;
     
+    float colour[3] = { 1.0f, 0.0f, 0.0f };
+    
     glfwSetKeyCallback(window, key_callback);
     
     while(!glfwWindowShouldClose(window))
@@ -132,7 +134,7 @@ int main(void)
         position += velocity * dt;
         
         if (position.y <= -0.25)
-            velocity.y = 2.5;
+            velocity.y = sqrt(2 * -accel.y * 1);
     
         if (position.x <= -0.9 || position.x >= 0.9)
             velocity.x = -velocity.x;
@@ -145,11 +147,15 @@ int main(void)
             ImGui::Begin("Parameters", NULL, ImGuiWindowFlags_AlwaysAutoResize);
             ImGui::Text("Press H to hide/show");
             ImGui::SliderFloat("##gravity", &accel.y, -1.f, -9.0f, "gravity = %.3f");
+            ImGui::SliderFloat("##xvelocity", &velocity.x, -1.f, 1.f, "x velocity = %.3f");
+            ImGui::ColorEdit3("##ball_colour", colour);
             ImGui::End();
             
             ImGui::Render();
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         }
+        
+        ball->set_colour(glm::vec4(colour[0], colour[1], colour[2], 1.0f));
         
         glfwSwapBuffers(window);
         glfwPollEvents();
