@@ -9,6 +9,10 @@
 #include "Grid.hpp"
 #include "Shadow.hpp"
 
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+
 #define try_emplace(optional, ...) \
 try { \
     optional.emplace(__VA_ARGS__); \
@@ -16,6 +20,18 @@ try { \
     std::cout << e.what() << std::endl; \
     glfwTerminate(); \
     return -1; \
+}
+
+bool imgui_visible = true;
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+        glfwSetWindowShouldClose(window, true);
+    }
+    
+    if (key == GLFW_KEY_H && action == GLFW_PRESS) {
+        imgui_visible = !imgui_visible;
+    }
 }
 
 int main(void)
@@ -46,6 +62,14 @@ int main(void)
         glfwTerminate();
         return -1;
     }
+    
+    // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGui::StyleColorsDark();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 330 core");
     
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -81,11 +105,10 @@ int main(void)
     
     const float dt = 1/60.f;
     
+    glfwSetKeyCallback(window, key_callback);
+    
     while(!glfwWindowShouldClose(window))
     {
-        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-            glfwSetWindowShouldClose(window, true);
-        
         glClearColor(clear_grey, clear_grey, clear_grey, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
@@ -114,9 +137,27 @@ int main(void)
         if (position.x <= -0.9 || position.x >= 0.9)
             velocity.x = -velocity.x;
         
+        if (imgui_visible) {
+            // Start the Dear ImGui frame
+            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
+            ImGui::Begin("Parameters", NULL, ImGuiWindowFlags_AlwaysAutoResize);
+            ImGui::Text("Press H to hide/show");
+            ImGui::SliderFloat("##gravity", &accel.y, -1.f, -9.0f, "gravity = %.3f");
+            ImGui::End();
+            
+            ImGui::Render();
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        }
+        
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+    
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
     
     glfwTerminate();
     return 0;
